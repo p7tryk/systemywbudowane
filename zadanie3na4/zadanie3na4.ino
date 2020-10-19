@@ -9,11 +9,11 @@ void setup() {
   pinMode(A2, INPUT);
 // włączenie na nim rezystora pull-up:
   digitalWrite(A2, HIGH);
-// ustawienie analogowego wejścia A2 jako wejście cyfrowe:
+// ustawienie analogowego wejścia A1 jako wejście cyfrowe:
   pinMode(A1, INPUT);
 // włączenie na nim rezystora pull-up:
   digitalWrite(A1, HIGH);
-// ustawienie analogowego wejścia A2 jako wejście cyfrowe:
+// ustawienie analogowego wejścia A0 jako wejście cyfrowe:
   pinMode(A0, INPUT);
 // włączenie na nim rezystora pull-up:
   digitalWrite(A0, HIGH);
@@ -27,7 +27,7 @@ int pos = 3;
 int speed = 512;
 
 void loop() {
-	if(pos>13)
+	if(pos>12)
 		pos-=10;
 	digitalWrite(pos, HIGH);
 	delay(speed);
@@ -39,13 +39,13 @@ void loop() {
 
 	if (digitalRead(A1) == LOW)
 		{
-			speed=/2;
+			speed/=2;
 			if(speed<16)
 				speed=16;
 		}
 	if (digitalRead(A0) == LOW)
 		{
-			speed=*2;
+			speed*=2;
 			if(speed>2048)
 				speed=2048;
 		}

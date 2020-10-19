@@ -1,4 +1,5 @@
-void setup() {
+void setup()
+{
   for (int i=3; i<14; ++i)
     pinMode(i, OUTPUT);
 // ustawienie analogowego wejścia A3 jako wejście cyfrowe:
@@ -27,32 +28,36 @@ int pos = 3;
 int speed = 512;
 int increment = 1;
 
-void loop() {
-	if(pos>13)
-		increment= (-increment);
+void loop()
+{
 	digitalWrite(pos, HIGH);
 	delay(speed);
 	digitalWrite(pos, LOW);
 	pos+=increment;
+	if(pos>12)
+		increment= (-increment);
+	if(pos<3)
+		increment= (-increment);
 
+	
 	if (digitalRead(A2) == LOW)
 		pos=3;
 
 	if (digitalRead(A1) == LOW)
 		{
-			speed=/2;
+			speed/=2;
 			if(speed<16)
 				speed=16;
 		}
 	if (digitalRead(A0) == LOW)
 		{
-			speed=*2;
+			speed*=2;
 			if(speed>2048)
 				speed=2048;
 		}
 
 	
 // jeśli przycisk zostaje wciśnięty, to włączyć diodę na płytce:
-  if (digitalRead(A3) == LOW)
+	if(digitalRead(A3) == LOW)
 		increment= (-increment);
 }

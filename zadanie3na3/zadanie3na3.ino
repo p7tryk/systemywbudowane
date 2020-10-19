@@ -1,4 +1,5 @@
-void setup() {
+void setup()
+{
   for (int i=3; i<14; ++i)
     pinMode(i, OUTPUT);
 // ustawienie analogowego wejścia A3 jako wejście cyfrowe:
@@ -15,11 +16,11 @@ void setup() {
   digitalWrite(13, LOW);
 }
 
-int pos = 3;
+int pos = 2;
 int speed = 512;
 
 void loop() {
-	if(pos>13)
+	if(pos>12)
 		pos-=10;
 	digitalWrite(pos, HIGH);
 	delay(speed);
