@@ -1,5 +1,6 @@
 #define LEDPIN 5
 
+
 void setup()
 {
 	for(int i=3;i<14;i++)
@@ -15,89 +16,194 @@ void setup()
   digitalWrite(A1, HIGH);
 }
 
-// zmienna globalna przechowująca tryb pracy
+// zmienne globalne
 int mode = 0;
+unsigned long lastON = 0; //czas ostatniego zapalonego swiatlo
+unsigned long lastOFF = 0;
+int usedpin = 0; //wybrany pin;
+bool button_pressed = 0; //opoznienie zeby nie zbierac wielokrotnuch nacisnien przycisku
+bool workmode=1;
+
+void mode5()
+{
+	int j = 16-usedpin;
+	if(millis()-lastON>500)
+		{
+			if(workmode==1)
+				{
+					digitalWrite(usedpin,LOW);
+					digitalWrite(j,LOW);
+					usedpin--;
+					lastON=millis();
+				}
+			else
+				{
+					digitalWrite(usedpin,HIGH);
+					digitalWrite(j,HIGH);
+					usedpin--;
+					lastON=millis();
+				}
+		}
+	if(usedpin<7)
+		{
+			usedpin=13;
+			workmode=!workmode;
+		}
+}
 
 void mode4()
 {
-	for(int i = 13; i>2;i--)
+	if(millis()-lastON>500)
 		{
-			digitalWrite(i, HIGH);
-			delay(500);
+			if(digitalRead(usedpin) == HIGH)
+				{
+					digitalWrite(usedpin,LOW);
+					usedpin++;
+				}
+			else
+				{
+					digitalWrite(usedpin,HIGH);
+					lastON=millis();
+				}
 		}
-	for(int i = 13; i>2;i--)
-		{
-			digitalWrite(i, LOW);
-			delay(500);
-		}
+	if(usedpin>12)
+		usedpin=3;
 }
 
 void mode3()
 {
-	for(int i = 13; i>2;i--)
+	if(millis()-lastON>500)
 		{
-			digitalWrite(i, HIGH);
-			delay(500);
-			digitalWrite(i, LOW);
+			if(digitalRead(usedpin) == HIGH)
+				{
+					digitalWrite(usedpin,LOW);
+					usedpin--;
+				}
+			else
+				{
+					digitalWrite(usedpin,HIGH);
+					lastON=millis();
+				}
 		}
+	if(usedpin<3||usedpin>13)
+		usedpin=13;
+	
 }
+
+
 
 void mode2()
 {
-	for(int i = 3; i<13;i++)
+	if(millis()-lastON>500)
 		{
-			digitalWrite(i, HIGH);
-			delay(500);
-			digitalWrite(i, LOW);
+			if(workmode==1)
+				{
+					digitalWrite(usedpin,LOW);
+					usedpin--;
+					lastON=millis();
+				}
+			else
+				{
+					digitalWrite(usedpin,HIGH);
+					usedpin--;
+					lastON=millis();
+				}
 		}
-	delay(500);
+	if(usedpin<3||usedpin>13)
+		{
+			usedpin=13;
+			workmode=!workmode;
+		}
 }
 
 void mode1()
 {
-	digitalWrite(LEDPIN, HIGH);
-	delay(500);
-	digitalWrite(LEDPIN, LOW);
-	delay(500);
+	if(millis()-lastON>500)
+		{
+			if(digitalRead(LEDPIN)==HIGH)
+				{
+					digitalWrite(LEDPIN,LOW);
+				}
+			else
+				{
+					digitalWrite(LEDPIN,HIGH);
+				}
+			lastON=millis();
+		}
+
 }
 
 void mode0()
 {
-	for(int i = 3; i<13;i++)
-		digitalWrite(i, HIGH);
+	if(millis()-lastON>500)
+		{
+			for(int i = 3; i<13;i++)
+				{
+					if(digitalRead(i)==HIGH)
+						{
+							digitalWrite(i, LOW);
+						}
+					else
+						{
+							digitalWrite(i, HIGH);
+						}
+					lastON=millis();
+				}
+		}
+}
 
-	delay(500);
-	
-	for(int i = 3; i<13;i++)
-		digitalWrite(i, LOW);
-	delay(500);
+void reset()
+{
+	for(int i=3;i<14;i++)
+		{
+			digitalWrite(i, LOW);
+		}
+	usedpin = 0;
+	lastON = millis();
+	lastOFF = millis();
+	button_pressed = 1;
+	workmode = 1;
 }
 
 void loop()
 {
+	if(button_pressed==true)
+		{
+			delay(300);
+			button_pressed=0;
+		}
+	
 // sekcja odczytu przycisków zmiany trybu pracy:
   if (digitalRead(A0) == LOW)
-    mode--;
+		{
+			mode++;
+			reset();
+		}
   else if (digitalRead(A1) == LOW)
-		mode++;
-	
+		{
+			mode--;
+			reset();
+		}
 // sekcja wykonawcza, której przebieg zależy od bieżącego trybu pracy:
-  switch (abs(mode)%5)
-  {
-  case 0:
-    mode0();
-		break;
-	case 1:
-		mode1();
-		break;
-	case 2:
-		mode2();
-		break;
-	case 3:
-		mode3();
-		break;
-	case 4:
-		mode4();
-		break;
+  switch (abs(mode)%6)
+		{
+		case 0:
+			mode0();
+			break;
+		case 1:
+			mode1();
+			break;
+		case 2:
+			mode2();
+			break;
+		case 3:
+			mode3();
+			break;
+		case 4:
+			mode4();
+			break;
+		case 5:
+			mode5();
+			break;
 	}
 }
