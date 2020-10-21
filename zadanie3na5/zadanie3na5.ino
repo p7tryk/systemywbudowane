@@ -43,9 +43,15 @@ void loop()
 
 	
 	if(pos>11)
-		increment= -increment;
+		{
+			increment= -increment;
+			pos=12; //zeby nie wyjechac poza zakres po zmianie na koncu diod
+		}
 	if(pos<4)
-		increment= -increment;
+		{
+			increment= -increment;
+			pos=3; //zeby nie wyjechac poza zakres po zmianie na koncu diod
+		}
 
  
 	if (digitalRead(A2) == LOW)
