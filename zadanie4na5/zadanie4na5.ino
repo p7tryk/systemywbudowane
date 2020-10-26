@@ -14,10 +14,12 @@ void setup()
   pinMode(A1, INPUT);
 	// włączenie na nim rezystora pull-up:
   digitalWrite(A1, HIGH);
+	Serial.begin(9600);
+	reset();
 }
 
 // zmienne globalne
-int mode = 0;
+unsigned int mode = 0;
 unsigned long lastON = 0; //czas ostatniego zapalonego swiatlo
 unsigned long lastOFF = 0;
 int usedpin = 0; //wybrany pin;
@@ -66,7 +68,7 @@ void mode4()
 					lastON=millis();
 				}
 		}
-	if(usedpin>12)
+	if(usedpin>12||usedpin<3)
 		usedpin=3;
 }
 
@@ -163,6 +165,7 @@ void reset()
 	lastOFF = millis();
 	button_pressed = 1;
 	workmode = 1;
+	Serial.println(mode);
 }
 
 void loop()
@@ -185,7 +188,7 @@ void loop()
 			reset();
 		}
 // sekcja wykonawcza, której przebieg zależy od bieżącego trybu pracy:
-  switch (abs(mode)%6)
+  switch (mode%6)
 		{
 		case 0:
 			mode0();
