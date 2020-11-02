@@ -119,7 +119,7 @@ void loop()
 			button_pressed=1;
 		}
 	
-	if (digitalRead(A3) == LOW)
+	if (digitalRead(A1) == LOW)
 		{
 			test++;
 			button_pressed=1;
