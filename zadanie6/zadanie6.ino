@@ -1,4 +1,6 @@
 #define LEDPIN 5
+#define PHOTOSTART 6
+#define PHOTOEND 697
 
 
 void setup()
@@ -23,7 +25,7 @@ void setup()
 	// włączenie na nim rezystora pull-up:
   digitalWrite(A3, HIGH);
 	
-	pinMode(13, INPUT_PULLUP);
+	pinMode(A5, INPUT_PULLUP);
 	
 	Serial.begin(9600);
 	reset();
@@ -61,10 +63,55 @@ void displayNumber(int number)
 		}
 }
 
-
-void settings()
+void lightsensormode()
 {
+	light = analogRead(A4);
+	
+  for(int i=0;i<10;i++)
+	  digitalWrite(i+3,(map(light,PHOTOSTART,PHOTOEND,0,1100)/(i+1))>100 ? HIGH : LOW);
+	Serial.println("aplikacja korzystajaca z fotorezystora");
+}
 
+
+int currentLED = 0;
+int ledbrightness[6] = {15,15,15,15,15,15};
+const int pwm[6] = {11,10,9,6,5,3};
+void pwmmode()
+{
+	if(digitalRead(A0) == LOW)
+		{
+			delay(30);
+			currentLED++;
+		}
+	if(digitalRead(A1) == LOW)
+		{
+			delay(30);
+			currentLED--;
+		}
+	if(digitalRead(A2) == LOW)
+	  {
+			delay(1);
+			ledbrightness[currentLED%6]+=10;
+		}
+	if(digitalRead(A3) == LOW)
+	  {
+			delay(1);
+			ledbrightness[currentLED%6]+=10;
+		}
+	Serial.println(currentLED);
+	if(ledbrightness[currentLED]>255)
+		ledbrightness[currentLED]=0;
+	if(ledbrightness[currentLED]<0)
+		ledbrightness[currentLED]=255;
+	for(int i=0;i<6;i++)
+		analogWrite(pwm[i],ledbrightness[i]);
+	Serial.println("Aplikacja korzystajaca z PWM");
+	
+}
+
+
+void speakermode()
+{
 	if(digitalRead(A0)==LOW)
 		{
 			ontime++;
@@ -86,46 +133,65 @@ void settings()
 			delay(100);
 		}
 	if(ontime>31)
-		ontime=0;
-	if(offtime<0)
+		ontime=1;
+	if(offtime<1)
 		ontime=31;
-	if(ontime>31)
-		ontime=0;
-	if(offtime<0)
-		ontime=31;
-	display2Numbers(ontime,offtime);
-}
-void lightsensormode()
-{
-	light = analogRead(A4);
-	
-  for(int i=0;i<10;i++)
-		digitalWrite(i+3,(light/i)>10 ? HIGH : LOW);
-	Serial.println("aplikacja korzystajaca z fotorezystora");
-}
+	if(offtime>31)
+		offtime=1;
+	if(offtime<1)
+		offtime=31;
 
-void alarmmode()
-{
+	display2Numbers(ontime,offtime);
+	
 	if(millis()-lastON>ontime*100)
 		{
-			for(int i = 3; i<13;i++)
-				{
-					digitalWrite(i, LOW);
-				}
-			lastOFF=millis();
-			Serial.println("alarm");
-		}
-	if(millis()-lastOFF>offtime*100)
-		{
-			for(int i = 3; i<13;i++)
-				{
-					digitalWrite(i, HIGH);
-				}
+			tone(2,1000);
 			lastON=millis();
-			Serial.println("alarm");
+			Serial.println("1000khz");
 		}
+	else if(millis()-lastOFF>offtime*100)
+		{
+			tone(2,2000);
+			lastOFF=millis();
+			Serial.println("2000khz");
+		}
+	
+	Serial.println("Aplikacja korzystająca z glosnika");
 }
+int logreduction(int input)
+{
+	return input;
+}
+void lightpwmmode()
+{
+	Serial.println("Aplikacja korzystająca z fotorezystora i PWM");
+	light = analogRead(A4);
+	Serial.print(light);
+	light = map(light,6,697,0,256);
+	Serial.print('\t');
+	Serial.println(light);
+	for(int i=0; i<6;i++)
+		analogWrite(pwm[i],light);
+	
+			
+	//digitalWrite(i+3,(map(light,6,697,0,1100)/i)>100 ? HIGH : LOW);						
 
+}
+void speakerpwmmode()
+{
+	Serial.println("Aplikacja korzystająca z fotorezystora i glosnika");
+	light = analogRead(A4);
+	Serial.print(light);
+	light = map(light,PHOTOSTART,PHOTOEND,1000,30000);
+	Serial.print('\t');
+	Serial.println(light);
+	for(int i=0; i<6;i++)
+		tone(2,light);
+	
+			
+	//digitalWrite(i+3,(map(light,6,697,0,1100)/i)>100 ? HIGH : LOW);						
+
+}
 
 void reset()
 {
@@ -134,13 +200,11 @@ void reset()
 			digitalWrite(i, LOW);
 		}
 	lastON = millis();
+	lastOFF = millis();
+	ontime=1;
+	offtime=1;
+	noTone(2);
 	Serial.println(mode);
-	if(!mode)
-		{
-			Serial.println("alarm");	
-		}
-	else
-		Serial.println("tryb ustawiania");
 }
 
 void loop()
@@ -151,36 +215,30 @@ void loop()
 			button_pressed=0;
 		}
 	
-// sekcja odczytu przycisków zmiany trybu pracy:
-  if (digitalRead(13) == LOW)
+	// sekcja odczytu przycisków zmiany trybu pracy:
+  if (digitalRead(A5) == LOW)
 		{
-			Serial.println("przycisniety 13");
 			mode++;
 			reset();
 			button_pressed=1;
 		}
-	if(digitalRead(A0) ==LOW || digitalRead(A1) ==LOW || digitalRead(A2) ==LOW || digitalRead(A3) ==LOW)
-		{
-			mode=1;
-			button_pressed=1;
-		}
-// sekcja wykonawcza, której przebieg zależy od bieżącego trybu pracy:
+	// sekcja wykonawcza, której przebieg zależy od bieżącego trybu pracy:
   switch (mode%6)
 		{
 		case 0:
 			lightsensormode();
 			break;
 		case 1:
-			settings();
+			pwmmode();
 			break;
 		case 2:
-			alarmmode();
+			speakermode();
 			break;
 		case 3:
-			alarmmode();
+		  lightpwmmode();
 			break;
 		case 4:
-			alarmmode();
+		  speakerpwmmode();
 			break;
-	}
+		}
 }
