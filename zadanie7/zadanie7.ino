@@ -1,12 +1,20 @@
-#define SIZE 4
+#define SIZE 6
 
 struct operation {
-	char operand[256];
-	void (*funptr)(int);
+  char operand[20];
+  void (*funptr)(int);
 };
 
-struct operation action[SIZE];
+const struct operation action[] = {
+	{"on\0",&on},
+	{"off\0",&off},
+	{"toggle\0",&toggle},
+	{"onbelow\0",&onbelow},
+	{"offbelow\0",&offbelow},
+	{"togglebelow\0",&togglebelow}
+};
 
+/* struct operation action[SIZE]; */
 
 	
 void setup()
@@ -16,17 +24,16 @@ void setup()
 	Serial.begin(9600);
 
 
-	strcpy(action[0].operand,"on");
-	action[0].funptr=&on;
-	strcpy(action[1].operand,"off");
-	action[1].funptr=&off;
-	strcpy(action[2].operand,"onbelow");
-	action[2].funptr=&onbelow;
-	strcpy(action[3].operand,"offbelow");
-	action[3].funptr=&offbelow;
+	/* strcpy(action[0].operand,"on"); */
+	/* action[0].funptr=&on; */
+	/* strcpy(action[1].operand,"off"); */
+	/* action[1].funptr=&off; */
+	/* strcpy(action[2].operand,"onbelow"); */
+	/* action[2].funptr=&onbelow; */
+	/* strcpy(action[3].operand,"offbelow"); */
+	/* action[3].funptr=&offbelow; */
 }
 //constants
-const char test[] = "test";
 
 
 
@@ -41,31 +48,45 @@ char buffer[256];
 
 bool reading = true;
 
+void toggle(int input)
+{
+	Serial.print("toggle ");
+	Serial.println(input);
+	lights[input]=!lights[input];
+}
+
 void on(int input)
 {
-	Serial.println("on");
+	Serial.print("on ");
 	Serial.println(input);
 	lights[input]=true;
 }
 void off(int input)
 {
-	Serial.println("off");
+	Serial.print("off ");
 	Serial.println(input);
 	lights[input]=false;
 }
 void onbelow(int input)
 {
-	Serial.println("onbelow");
+	Serial.print("onbelow ");
 	Serial.println(input);
 	for(input;input>=0;input--)
 		lights[input]=true;
 }
 void offbelow(int input)
 {
-	Serial.println("offbelow");
+	Serial.print("offbelow ");
 	Serial.println(input);
 	for(input;input>=0;input--)
 		lights[input]=false;
+}
+void togglebelow(int input)
+{
+	Serial.print("togglebelow ");
+	Serial.println(input);
+	for(input;input>=0;input--)
+		lights[input]=!lights[input];
 }
 
 
@@ -75,17 +96,11 @@ void display()
 		digitalWrite(i+3, lights[i] ? HIGH : LOW);
 }
 
-void debug()
-{
-	Serial.println("parse");
-	Serial.println(strcmp(operand,test));
-	Serial.println(operand);
-	Serial.println(number);
-}
 
 void parse()
 {
-	for(int i=0; i<SIZE;i++)
+	Serial.println("parse");
+	for(int i=0; i<sizeof(action);i++)
 		{
 			if(number<=0)
 				break;
@@ -110,7 +125,7 @@ void loop()
 		}
 	if(reading == false)
 		{
-			for(int i;i<256; i++)
+			for(int i=0;i<256; i++)
 				{
 					if(buffer[i] == ' ')
 						{
