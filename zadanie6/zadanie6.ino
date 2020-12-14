@@ -63,7 +63,7 @@ void displayNumber(int number)
 		}
 }
 
-void lightsensormode()
+vvoid lightsensormode()
 {
 	light = analogRead(A4);
 	

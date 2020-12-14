@@ -1,4 +1,4 @@
-#define SIZE 6
+#define SIZE sizeof(action)
 
 struct operation {
   char operand[20];
@@ -14,7 +14,6 @@ const struct operation action[] = {
 	{"togglebelow\0",&togglebelow}
 };
 
-/* struct operation action[SIZE]; */
 
 	
 void setup()
@@ -23,17 +22,7 @@ void setup()
 		pinMode(i, OUTPUT);
 	Serial.begin(9600);
 
-
-	/* strcpy(action[0].operand,"on"); */
-	/* action[0].funptr=&on; */
-	/* strcpy(action[1].operand,"off"); */
-	/* action[1].funptr=&off; */
-	/* strcpy(action[2].operand,"onbelow"); */
-	/* action[2].funptr=&onbelow; */
-	/* strcpy(action[3].operand,"offbelow"); */
-	/* action[3].funptr=&offbelow; */
 }
-//constants
 
 
 
