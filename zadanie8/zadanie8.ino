@@ -3,11 +3,16 @@
 #define MINUTE 60
 #define HOUR (60*60)
 #define TIMESTOP 1000
+#define DAY (long)((long)60*60*24)
 
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
-int timestamp = 0;
-int mode = 0;
-int lastON = 0;
+unsigned long  timestamp = 0;
+unsigned int mode = 0;
+unsigned long  lastON = 0;
+unsigned long  epoch;
+int selected = 0;
+const int position[] = {0,3,6};
+const int interval[] = {HOUR, MINUTE, SECOND};
 
 void setup()
 {
@@ -40,6 +45,7 @@ void setup()
 	lcd.clear();
 
 	test();
+	updateTime();
 	timestamp = -1000;
 }
 //ZEGAR
@@ -50,24 +56,22 @@ struct time{
 	byte second;
 } globaltime;
 
-int epoch;
+
 
 
 void test()
 {
-	epoch = 14030;
+	epoch = 50030;
 }
 void updateTime()
 {
-	int time;
-	time = epoch / HOUR;
-	globaltime.hour=time;
-	
-	time = epoch - time * HOUR;
-	globaltime.minute = time / 60;
-	
-	time = time - globaltime.minute * 60;
-	globaltime.second = time;
+	epoch = epoch % DAY;
+	long n = epoch;
+	globaltime.hour = n / 3600;
+	n %= 3600;
+	globaltime.minute = n / 60 ;
+	n %= 60;
+	globaltime.second = n;
 }
 void incrementTime()
 {
@@ -100,9 +104,7 @@ void writeTime()
 	debug();
 }
 
-int selected = 0;
-const int position[] = {0,3,6};
-const int interval[] = {HOUR, MINUTE, SECOND};
+
 
 void blinkSelected()
 {
@@ -124,10 +126,14 @@ void blinkSelected()
 void decrementCurrent()
 {
 	epoch -= interval[selected];
+	if(epoch>=DAY)
+		epoch = 0;
 }
 void incrementCurrent()
 {
 	epoch += interval[selected];
+	if(epoch<0)
+		epoch = DAY-1;
 }
 
 void inputTime()
@@ -137,39 +143,33 @@ void inputTime()
 	if(digitalRead(A3) == LOW)
 		{
 			selected++;
-			delay(100);
+			delay(300);
 		}
 	if(digitalRead(A2) == LOW)
 		{
 			selected--;
-			delay(100);
+			delay(300);
 		}
 	blinkSelected();
 
 	if(digitalRead(A1) == LOW)
 		{
 			incrementCurrent();
-			delay(100);
+			delay(300);
 		}
 	if(digitalRead(A0) == LOW)
 		{
 			decrementCurrent();
-			delay(100);
+			delay(300);
 		}
 }
 void debug()
 {
 	Serial.println(epoch);
 	Serial.print(globaltime.hour);
-	if(globaltime.hour<10)
-		Serial.print(0);
 	Serial.print(":");
-	if(globaltime.second<10)
-		Serial.print(0);
 	Serial.print(globaltime.minute);
 	Serial.print(":");
-	if(globaltime.second<10)
-		Serial.print(0);
 	Serial.println(globaltime.second);
 }
 
